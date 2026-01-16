@@ -137,3 +137,121 @@ Encja `projects` przechowuje informacje o projektach realizowanych w firmie. Zaw
 - `id` SERIAL PRIMARY KEY
 - `name` TEXT NOT NULL
 - `budget` INT
+# Scenariusze analitycznego wykorzystania
+
+### 1. Lista użytkowników wraz z nazwami ich działów i menedżerów
+
+Cel: Zidentyfikowanie, którzy pracownicy należą do jakiego działu i kto jest ich bezpośrednim przełożonym. To zapytanie jest kluczowe dla struktury organizacyjnej i raportowania HR.
+
+Analiza: Pozwala na szybkie zorientowanie się w hierarchii firmy i przypisaniu pracowników.
+
+    SELECT
+        u.name AS "Nazwa Użytkownika",
+        d.name AS "Nazwa Działu",
+        m.name AS "Menedżer"
+    FROM
+        users u
+    LEFT JOIN
+        departments d ON u.department_id = d.id
+    LEFT JOIN
+        users m ON u.manager_id = m.id
+    ORDER BY
+        "Nazwa Działu", "Nazwa Użytkownika";
+
+### 2. Średnie wynagrodzenie w każdym dziale
+
+Cel: Obliczenie średniego wynagrodzenia dla każdego działu, biorąc pod uwagę tylko aktualne pensje. Jest to kluczowe dla analizy kosztów pracy.
+
+Analiza: Pozwala na porównanie poziomu wynagrodzeń między działami.
+
+    SELECT
+        d.name AS "Nazwa Działu",
+        AVG(s.amount) AS "Średnie Wynagrodzenie"
+    FROM
+        departments d
+    JOIN
+        users u ON d.id = u.department_id
+    JOIN
+        salaries s ON u.id = s.user_id
+    WHERE
+        s.valid_to IS NULL
+    GROUP BY
+        d.name
+    ORDER BY
+        "Średnie Wynagrodzenie" DESC;
+
+### 3. Projekty i liczba przypisanych do nich zadań wraz z ich statusami
+
+Cel: Uzyskanie przeglądu postępu prac nad poszczególnymi projektami poprzez zliczenie zadań i ich statusów.
+
+Analiza: Pomaga w ocenie obciążenia projektów, efektywności zarządzania projektem.
+
+    SELECT
+        p.name AS "Nazwa Projektu",
+        t.status AS "Status Zadania",
+        COUNT(t.id) AS "Liczba Zadań"
+    FROM
+        projects p
+    LEFT JOIN
+        tasks t ON p.id = t.project_id
+    GROUP BY
+        p.name, t.status
+    ORDER BY
+        p.name, t.status;
+
+### 4. Liczba użytkowników na każdą rolę
+
+Cel: Zliczenie, ilu użytkowników pełni każdą z zdefiniowanych ról. Pomaga to w zrozumieniu rozkładu obowiązków i specjalizacji w organizacji.
+
+Analiza: To zapytanie dostarcza informacji o wielkości zespołów przypisanych do poszczególnych ról. Może być użyte do oceny, czy zasoby są odpowiednio rozdzielone i czy nie ma zbyt wielu lub zbyt mało osób na kluczowych stanowiskach.
+
+    SELECT
+        r.name AS "Nazwa Roli",
+        COUNT(ur.user_id) AS "Liczba Użytkowników"
+    FROM
+        roles r
+    LEFT JOIN
+        user_roles ur ON r.id = ur.role_id
+    GROUP BY
+        r.name
+    ORDER BY
+        "Liczba Użytkowników" DESC;
+
+### 5. Użytkownicy z wynagrodzeniem powyżej średniej w swoim dziale
+
+Cel: Zidentyfikowanie użytkowników, których aktualne wynagrodzenie jest wyższe niż średnie wynagrodzenie w ich dziale.
+
+Analiza: To zapytanie jest przydatne do monitorowania struktury wynagrodzeń, identyfikacji wyróżniających się pracowników pod kątem zarobków.
+
+    WITH DepartmentAverage AS (
+        SELECT
+            d.id AS department_id,
+            AVG(s.amount) AS avg_dept_salary
+        FROM
+            departments d
+        JOIN
+            users u ON d.id = u.department_id
+        JOIN
+            salaries s ON u.id = s.user_id
+        WHERE
+            s.valid_to IS NULL
+        GROUP BY
+            d.id
+    )
+    SELECT
+        u.name AS "Nazwa Użytkownika",
+        d.name AS "Nazwa Działu",
+        s.amount AS "Aktualne Wynagrodzenie",
+        da.avg_dept_salary AS "Średnie Wynagrodzenie w Dziale"
+    FROM
+        users u
+    JOIN
+        salaries s ON u.id = s.user_id
+    JOIN
+        departments d ON u.department_id = d.id
+    JOIN
+        DepartmentAverage da ON d.id = da.department_id
+    WHERE
+        s.valid_to IS NULL AND s.amount > da.avg_dept_salary
+    ORDER BY
+        d.name, s.amount DESC;
