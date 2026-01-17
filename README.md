@@ -146,9 +146,9 @@ Cel: Zidentyfikowanie, którzy pracownicy należą do jakiego działu i kto jest
 Analiza: Pozwala na szybkie zorientowanie się w hierarchii firmy i przypisaniu pracowników.
 
     SELECT
-        u.name AS "Nazwa Użytkownika",
-        d.name AS "Nazwa Działu",
-        m.name AS "Menedżer"
+        u.name AS "Nazwa Uzytkownika",
+        d.name AS "Nazwa Dzialu",
+        m.name AS "Menedzer"
     FROM
         users u
     LEFT JOIN
@@ -156,7 +156,7 @@ Analiza: Pozwala na szybkie zorientowanie się w hierarchii firmy i przypisaniu 
     LEFT JOIN
         users m ON u.manager_id = m.id
     ORDER BY
-        "Nazwa Działu", "Nazwa Użytkownika";
+        "Nazwa Dzialu", "Nazwa Uzytkownika";
 
 ### 2. Średnie wynagrodzenie w każdym dziale
 
@@ -165,8 +165,8 @@ Cel: Obliczenie średniego wynagrodzenia dla każdego działu, biorąc pod uwag�
 Analiza: Pozwala na porównanie poziomu wynagrodzeń między działami.
 
     SELECT
-        d.name AS "Nazwa Działu",
-        AVG(s.amount) AS "Średnie Wynagrodzenie"
+        d.name AS "Nazwa Dzialu",
+        AVG(s.amount) AS "Srednie Wynagrodzenie"
     FROM
         departments d
     JOIN
@@ -178,7 +178,7 @@ Analiza: Pozwala na porównanie poziomu wynagrodzeń między działami.
     GROUP BY
         d.name
     ORDER BY
-        "Średnie Wynagrodzenie" DESC;
+        "Srednie Wynagrodzenie" DESC;
 
 ### 3. Projekty i liczba przypisanych do nich zadań wraz z ich statusami
 
@@ -189,7 +189,7 @@ Analiza: Pomaga w ocenie obciążenia projektów, efektywności zarządzania pro
     SELECT
         p.name AS "Nazwa Projektu",
         t.status AS "Status Zadania",
-        COUNT(t.id) AS "Liczba Zadań"
+        COUNT(t.id) AS "Liczba Zadan"
     FROM
         projects p
     LEFT JOIN
@@ -207,7 +207,7 @@ Analiza: To zapytanie dostarcza informacji o wielkości zespołów przypisanych 
 
     SELECT
         r.name AS "Nazwa Roli",
-        COUNT(ur.user_id) AS "Liczba Użytkowników"
+        COUNT(ur.user_id) AS "Liczba Uzytkownikow"
     FROM
         roles r
     LEFT JOIN
@@ -215,7 +215,7 @@ Analiza: To zapytanie dostarcza informacji o wielkości zespołów przypisanych 
     GROUP BY
         r.name
     ORDER BY
-        "Liczba Użytkowników" DESC;
+        "Liczba Uzytkownikow" DESC;
 
 ### 5. Użytkownicy z wynagrodzeniem powyżej średniej w swoim dziale
 
@@ -239,10 +239,10 @@ Analiza: To zapytanie jest przydatne do monitorowania struktury wynagrodzeń, id
             d.id
     )
     SELECT
-        u.name AS "Nazwa Użytkownika",
-        d.name AS "Nazwa Działu",
+        u.name AS "Nazwa Uzytkownika",
+        d.name AS "Nazwa Dzialu",
         s.amount AS "Aktualne Wynagrodzenie",
-        da.avg_dept_salary AS "Średnie Wynagrodzenie w Dziale"
+        da.avg_dept_salary AS "Srednie Wynagrodzenie w Dziale"
     FROM
         users u
     JOIN
